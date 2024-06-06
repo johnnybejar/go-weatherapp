@@ -13,7 +13,8 @@ import (
 )
 
 type WeatherPageData struct {
-	WeatherData Response 
+	WeatherData Response
+	IconURL string
 }
 
 type Response struct {
@@ -23,20 +24,42 @@ type Response struct {
 	Coord map[string]float32 	`json:"coord"`
 	Dt int 						`json:"dt"`
 	Id int 						`json:"id"`
-	Main map[string]interface{} `json:"main"`
+	Main Main 					`json:"main"`
 	Name string 				`json:"name"`
-	Sys map[string]interface{} 	`json:"sys"`
+	Sys Sys 					`json:"sys"`
 	Timezone int 				`json:"timezone"`
 	Visibility int 				`json:"visibility"`
 	WeatherCondition []Weather 	`json:"weather"`
-	Wind map[string]interface{} `json:"wind"`
+	Wind Wind 					`json:"wind"`
+}
+
+type Main struct {
+	FeelsLike float64 			`json:"feels_like"`
+	Humidity int 				`json:"humidity"`
+	Pressure int 				`json:"pressure"`
+	Temp float64 				`json:"temp"`
+	TempMax float64 			`json:"temp_max"`
+	TempMin float64 			`json:"temp_min"`
+}
+
+type Sys struct {
+	Country string 				`json:"country"`
+	Id int 						`json:"id"`
+	Sunrise int 				`json:"sunrise"`
+	Sunset int 					`json:"sunset"`
+	// Type int `json:"type"` (not needed)
 }
 
 type Weather struct {
-	Id int `json:"id"`
-	Main string `json:"main"`
-	Description string `json:"description"`
-	Icon string `json:"icon"`
+	Id int 						`json:"id"`
+	Main string 				`json:"main"`
+	Description string 			`json:"description"`
+	Icon string 				`json:"icon"`
+}
+
+type Wind struct {
+	Degree int 					`json:"def"`
+	Speed float64 				`json:"speed"`
 }
 
 func getWeatherData(req string, key string) (*http.Response, error) {
@@ -87,7 +110,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 
-		pageData = &WeatherPageData{apiRes}
+		pageData = &WeatherPageData{apiRes, fmt.Sprintf("http://openweathermap.org/img/w/%s.png", apiRes.WeatherCondition[0].Icon)}
 	}
 
 	err = template.Execute(w, pageData)

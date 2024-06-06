@@ -13,7 +13,13 @@
         <input type="submit" value="GO">
     </form>
     {{if .}}
-    <span>{{.WeatherData.Sys}}</span>
+    <div class="weather">
+        <div class="icon">
+            <strong>{{.WeatherData.Name}}, {{.WeatherData.Sys.Country}}</strong>
+            <img src="{{.IconURL}}" alt="icon">
+        </div>
+        <span class="temperature">{{.WeatherData.Main}}</span>
+    </div>
     {{end}}
 </body>
 </html>
