@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -62,10 +63,12 @@ type Wind struct {
 	Speed float64 				`json:"speed"`
 }
 
-func getWeatherData(req string, key string) (*http.Response, error) {
+func getWeatherData(search string, key string) (*http.Response, error) {
+	search = strings.Replace(search, " ", "+", -1)
+
 	reqUrl := fmt.Sprintf(
 		"https://api.openweathermap.org/data/2.5/weather?q=%s&units=imperial&appid=%s",
-		req,
+		search,
 		key,
 	)
 
@@ -96,8 +99,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		search = r.FormValue("search")
 
 		res, err := getWeatherData(search, API_KEY)
-		if err != nil {
-			log.Fatal(err)
+		if res.StatusCode >= 400 || err != nil {
+			err = template.Execute(w, pageData)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				log.Fatal(err)
+			}
+			return
 		}
 
 		defer res.Body.Close()
@@ -120,10 +128,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = template.Execute(w, pageData)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			log.Fatal(err)
-		}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Fatal(err)
+	}
 }
 
 func main() {
