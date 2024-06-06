@@ -75,6 +75,12 @@ func getWeatherData(req string, key string) (*http.Response, error) {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" && r.URL.Path != "" {
+		 http.NotFound(w, r)
+		 fmt.Fprintf(w, "Go back to the root directory/path")
+		 return
+	}
+
 	template, err := template.ParseFiles("index.html")
 	if err != nil {
 		log.Fatal(err)

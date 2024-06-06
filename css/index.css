@@ -1,4 +1,16 @@
 body {
-    background-color: rgb(63, 63, 63);
+    background-color: rgb(40, 40, 40);
     color: white;
+}
+
+.main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.weather {
+    border: 2px solid white;
+    border-radius: 2px;
 }
