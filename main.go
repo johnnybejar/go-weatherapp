@@ -12,24 +12,23 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type PageData struct {
-	City, Country, Weather, Icon string
-	Temperature, Wind int
+type WeatherPageData struct {
+	WeatherData Response 
 }
 
 type Response struct {
-	Base string `json:"base"`
-	Clouds map[string]string `json:"clouds"`
-	Cod int `json:"cod"`
-	Coord map[string]float32 `json:"coord"`
-	Dt int `json:"dt"`
-	Id int `json:"id"`
+	Base string 				`json:"base"`
+	Clouds map[string]int 		`json:"clouds"`
+	Cod int 					`json:"cod"`
+	Coord map[string]float32 	`json:"coord"`
+	Dt int 						`json:"dt"`
+	Id int 						`json:"id"`
 	Main map[string]interface{} `json:"main"`
-	Name string `json:"name"`
-	Sys map[string]interface{} `json:"sys"`
-	Timezone int `json:"timezone"`
-	Visibility int `json:"visibility"`
-	WeatherCondition []Weather `json:"weather"`
+	Name string 				`json:"name"`
+	Sys map[string]interface{} 	`json:"sys"`
+	Timezone int 				`json:"timezone"`
+	Visibility int 				`json:"visibility"`
+	WeatherCondition []Weather 	`json:"weather"`
 	Wind map[string]interface{} `json:"wind"`
 }
 
@@ -61,35 +60,46 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	godotenv.Load(".env")
 	API_KEY := os.Getenv("API_KEY")
 
-	res, err := getWeatherData("wilmington", API_KEY)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer res.Body.Close()
+	var search string
+	var pageData *WeatherPageData = nil
 
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		http.Error(w, "Failed to read API response", http.StatusInternalServerError)
-		log.Fatal(err)
+	if r.Method == http.MethodPost {
+		search = r.FormValue("search")
+
+		res, err := getWeatherData(search, API_KEY)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer res.Body.Close()
+
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			http.Error(w, "Failed to read API response", http.StatusInternalServerError)
+			log.Fatal(err)
+		}
+
+		var apiRes Response
+
+		err = json.Unmarshal(body, &apiRes)
+		if err != nil {
+			http.Error(w, "Failed to parse API response", http.StatusInternalServerError)
+			log.Fatal(err)
+		}
+
+		pageData = &WeatherPageData{apiRes}
 	}
 
-	var apiRes Response
-
-	err = json.Unmarshal(body, &apiRes)
-	if err != nil {
-		http.Error(w, "Failed to parse API response", http.StatusInternalServerError)
-		log.Fatal(err)
-	}
-
-	err = template.Execute(w, apiRes)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Fatal(err)
-	}
+	err = template.Execute(w, pageData)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Fatal(err)
+		}
 }
 
 func main() {
 	http.HandleFunc("/", handler)
+	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css/"))))
 
 	fmt.Printf("Listening on port 8080")
 

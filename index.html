@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/index.css">
     <title>Weather</title>
 </head>
 <body>
     <h1>Weather App</h1>
-    <input type="text">
-    {{template "main" .}}
+    <form method="post">
+        <input type="text" name="search" placeholder="Search">
+        <input type="submit" value="GO">
+    </form>
+    {{if .}}
+    <span>{{.WeatherData.Sys}}</span>
+    {{end}}
 </body>
 </html>
