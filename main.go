@@ -1,3 +1,6 @@
+/*
+Simple website that gets weather data from OpenWeatherMap API in Go
+*/
 package main
 
 import (
@@ -13,16 +16,21 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// Data that will be used by the template in index.html
+// WeatherData is a pointer so we can set it to
+// nil when page is initialized or bad request
 type WeatherPageData struct {
 	WeatherData *Response
 	IconURL string
 	Error bool
 }
 
+// Setter for error
 func (wpd *WeatherPageData) setError(err bool) {
 	wpd.Error = err
 }
 
+// The full response from OpenWeatherMap API
 type Response struct {
 	Base string 				`json:"base"`
 	Clouds map[string]int 		`json:"clouds"`
@@ -68,41 +76,52 @@ type Wind struct {
 	Speed float64 				`json:"speed"`
 }
 
+// Calls the OpenWeatherMap API
 func getWeatherData(search string, key string) (*http.Response, error) {
+	// Replaces all spaces with "+", as that is how OpenWeatherMap represents spaces
+	// Ex. "Los Angeles" -> "Los+Angeles"
 	search = strings.Replace(search, " ", "+", -1)
 
+	// Build the request url
 	reqUrl := fmt.Sprintf(
 		"https://api.openweathermap.org/data/2.5/weather?q=%s&units=imperial&appid=%s",
 		search,
 		key,
 	)
 
+	// Note that the response can be a 400 and err be nil, but is handled in the handler below
 	res, err := http.Get(reqUrl)
 
 	return res, err
 }
 
+// Handles requests to the server
 func handler(w http.ResponseWriter, r *http.Request) {
+	// Any path that isn't the root will be a not found
 	if r.URL.Path != "/" && r.URL.Path != "" {
 		 http.NotFound(w, r)
 		 fmt.Fprintf(w, "Go back to the root directory/path")
 		 return
 	}
-
+	
+	// Creates the template from index.html
 	template, err := template.ParseFiles("index.html")
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Load environment variables
 	godotenv.Load(".env")
 	API_KEY := os.Getenv("API_KEY")
 
 	var search string
-	var pageData *WeatherPageData = &WeatherPageData{nil, "", false}
+	var pageData WeatherPageData = WeatherPageData{nil, "", false}
 
+	// Check if it was a search
 	if r.Method == http.MethodPost {
 		search = r.FormValue("search")
 
+		// Get weather data and handle any errors, execute template and return if >400 or err
 		res, err := getWeatherData(search, API_KEY)
 		if res.StatusCode >= 400 || err != nil {
 			pageData.setError(true)
@@ -115,24 +134,28 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		defer res.Body.Close()
-
+		
+		// Read the response body, should be JSON
 		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			http.Error(w, "Failed to read API response", http.StatusInternalServerError)
 			log.Fatal(err)
 		}
 
-		var apiRes Response
+		var apiRes *Response
 
+		// Parse data from the api and store into apiRes
 		err = json.Unmarshal(body, &apiRes)
 		if err != nil {
 			http.Error(w, "Failed to parse API response", http.StatusInternalServerError)
 			log.Fatal(err)
 		}
-
-		pageData = &WeatherPageData{&apiRes, fmt.Sprintf("http://openweathermap.org/img/w/%s.png", apiRes.WeatherCondition[0].Icon), false}
+		
+		// Final WeatherPageData that will be given to the template
+		pageData = WeatherPageData{apiRes, fmt.Sprintf("http://openweathermap.org/img/w/%s.png", apiRes.WeatherCondition[0].Icon), false}
 	}
 
+	// Execute the template with the WeatherPageData
 	err = template.Execute(w, pageData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -142,6 +165,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/", handler)
+	// Serves css files
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css/"))))
 
 	fmt.Printf("Listening on port 8080")
