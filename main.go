@@ -14,8 +14,13 @@ import (
 )
 
 type WeatherPageData struct {
-	WeatherData Response
+	WeatherData *Response
 	IconURL string
+	Error bool
+}
+
+func (wpd *WeatherPageData) setError(err bool) {
+	wpd.Error = err
 }
 
 type Response struct {
@@ -93,13 +98,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	API_KEY := os.Getenv("API_KEY")
 
 	var search string
-	var pageData *WeatherPageData = nil
+	var pageData *WeatherPageData = &WeatherPageData{nil, "", false}
 
 	if r.Method == http.MethodPost {
 		search = r.FormValue("search")
 
 		res, err := getWeatherData(search, API_KEY)
 		if res.StatusCode >= 400 || err != nil {
+			pageData.setError(true)
 			err = template.Execute(w, pageData)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -124,7 +130,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 
-		pageData = &WeatherPageData{apiRes, fmt.Sprintf("http://openweathermap.org/img/w/%s.png", apiRes.WeatherCondition[0].Icon)}
+		pageData = &WeatherPageData{&apiRes, fmt.Sprintf("http://openweathermap.org/img/w/%s.png", apiRes.WeatherCondition[0].Icon), false}
 	}
 
 	err = template.Execute(w, pageData)
