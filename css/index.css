@@ -1,16 +1,37 @@
 body {
     background-color: rgb(40, 40, 40);
     color: white;
+    display: flex;
+    justify-content: center;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
 
 .main {
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
     flex-direction: column;
+    min-width: 200px;
+    width: 40%;
+    max-width: 500px;
 }
 
 .weather {
     border: 2px solid white;
     border-radius: 2px;
+    padding: .5em 1em;
+    margin-top: 1em;
+}
+
+.icon {
+    display: flex;
+    align-items: center
+} 
+
+.error {
+    color: rgb(255, 0, 0);
+    font-size: 2em;
+    font-weight: bold;
+    padding: 1em;
 }
