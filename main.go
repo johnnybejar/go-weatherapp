@@ -9,6 +9,7 @@ import (
 	"html/template"
 	"io"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"strings"
@@ -25,7 +26,7 @@ type WeatherPageData struct {
 	Error bool
 }
 
-// Setter for error
+// Setter for any errors encountered
 func (wpd *WeatherPageData) setError(err bool) {
 	wpd.Error = err
 }
@@ -55,6 +56,14 @@ type Main struct {
 	TempMax float64 			`json:"temp_max"`
 	TempMin float64 			`json:"temp_min"`
 }
+
+// Round the temps from main
+func (m *Main) roundTemps() {
+	m.FeelsLike = math.Round(m.FeelsLike*100/100)
+	m.Temp = math.Round(m.Temp*100/100)
+	m.TempMax = math.Round(m.TempMax*100/100)
+	m.TempMin = math.Round(m.TempMin*100/100)
+} 
 
 type Sys struct {
 	Country string 				`json:"country"`
@@ -153,6 +162,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		
 		// Final WeatherPageData that will be given to the template
 		pageData = WeatherPageData{apiRes, fmt.Sprintf("http://openweathermap.org/img/w/%s.png", apiRes.WeatherCondition[0].Icon), false}
+
+		// Temperatures will likely have decimal values, so round them
+		pageData.WeatherData.Main.roundTemps()
 	}
 
 	// Execute the template with the WeatherPageData
@@ -172,5 +184,7 @@ func main() {
 	fmt.Printf("Listening on port 8080")
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
+
+
 }
 
