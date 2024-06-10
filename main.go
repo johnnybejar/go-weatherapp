@@ -81,7 +81,7 @@ type Weather struct {
 }
 
 type Wind struct {
-	Degree int 					`json:"def"`
+	Degree int 					`json:"deg"`
 	Speed float64 				`json:"speed"`
 }
 
@@ -184,7 +184,5 @@ func main() {
 	fmt.Printf("Listening on port 8080")
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
-
-
 }
 

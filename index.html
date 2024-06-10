@@ -23,6 +23,10 @@
                 <img src="{{.IconURL}}" alt="icon">
             </div>
             <span class="temperature">{{.WeatherData.Main.Temp}}&#176;F</span>
+            <span>Weather: {{(index .WeatherData.WeatherCondition 0).Main}} ({{(index .WeatherData.WeatherCondition 0).Description}})</span>
+            <div class="wind">
+                <span>Wind: {{.WeatherData.Wind.Speed}}mph {{.WeatherData.Wind.Degree}}&#176;</span>
+            </div>
         </div>
         {{end}}
     </div>

@@ -1,9 +1,8 @@
 body {
-    background-color: rgb(40, 40, 40);
-    color: white;
     display: flex;
     justify-content: center;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background-color: rgb(203, 241, 255);
 }
 
 .main {
@@ -18,16 +17,27 @@ body {
 }
 
 .weather {
-    border: 2px solid white;
-    border-radius: 2px;
+    /* border: 2px solid white;
+    border-radius: 2px; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: rgb(100, 100, 100);
+    color: rgb(203, 241, 255);
+    border-radius: .5em;
     padding: .5em 1em;
     margin-top: 1em;
+}
+
+.wind {
+    display: flex;
+    align-items: center;
 }
 
 .icon {
     display: flex;
     align-items: center
-} 
+}
 
 .error {
     color: rgb(255, 0, 0);
