@@ -26,8 +26,14 @@
             <span>Weather: {{(index .WeatherData.WeatherCondition 0).Main}} ({{(index .WeatherData.WeatherCondition 0).Description}})</span>
             <div class="wind">
                 <span>Wind: {{.WeatherData.Wind.Speed}}mph {{.WeatherData.Wind.Degree}}&#176;</span>
+                <div id="arrow"></div>
             </div>
         </div>
+        <script>
+            // Need to add 45 degrees bc its initially -45 or 315
+            const degrees = String(parseInt("{{.WeatherData.Wind.Degree}}")+45);
+            document.getElementById('arrow').style.transform = `rotate(${degrees}deg)`;
+        </script>
         {{end}}
     </div>
 </body>
