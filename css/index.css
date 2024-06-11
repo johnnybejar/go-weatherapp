@@ -72,3 +72,18 @@ body {
     font-weight: bold;
     padding: 1em;
 }
+
+.footer-link {
+    margin-top: 2em;
+    text-decoration: none;
+    color: black;
+}
+
+.footer {
+    border-bottom: 2px solid transparent;
+    transition: .2s;
+}
+
+.footer:hover {
+    border-bottom-color: black;
+}
