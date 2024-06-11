@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="main">
-        <h1>Weather</h1>
+        <h1 class="header">Weather Check</h1>
         <form method="post">
             <input type="text" name="search" placeholder="Search">
             <input type="submit" value="GO">
@@ -30,6 +30,7 @@
             </div>
         </div>
         <script>
+            // Rotate arrow to match with wind direction
             // Need to add 45 degrees bc its initially -45 or 315
             const degrees = String(parseInt("{{.WeatherData.Wind.Degree}}")+45);
             document.getElementById('arrow').style.transform = `rotate(${degrees}deg)`;
